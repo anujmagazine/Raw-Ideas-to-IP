@@ -8,15 +8,28 @@ export async function analyzeIPStrategy(input: string): Promise<AnalysisResult> 
   const response = await ai.models.generateContent({
     model: "gemini-3-pro-preview",
     contents: `Analyze the following business idea, skill, or website and suggest exactly 5 unique Intellectual Property (IP) ideas that can help build a competitive moat. 
-    Focus on high-value, non-obvious IP that provides true differentiation.
+    
+    CRITICAL INSTRUCTIONS:
+    1. Stick strictly to the terminology and business description provided by the user. 
+    2. DO NOT invent or hallucinate brand names, company names, or product names that are not in the input.
+    3. Use very simple, plain language for the summary.
+    4. Focus on high-value, non-obvious IP that provides true differentiation.
     
     Input: ${input}`,
     config: {
-      temperature: 0.7,
+      temperature: 0.4, // Lower temperature to reduce hallucinations/unwanted creativity
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
+          ideaSummary: {
+            type: Type.STRING,
+            description: "A very simple, plain-English summary of the core business idea. Stick strictly to the user's words. Do not invent a name for the business."
+          },
+          analysisIntent: {
+            type: Type.STRING,
+            description: "A brief statement explaining the purpose of the following analysis (e.g., 'We have analyzed the core value drivers to identify assets that are difficult for competitors to replicate.')"
+          },
           summary: { 
             type: Type.STRING, 
             description: "A high-level overview of the IP strategy landscape for this input." 
@@ -46,7 +59,7 @@ export async function analyzeIPStrategy(input: string): Promise<AnalysisResult> 
             }
           }
         },
-        required: ["summary", "suggestions", "overallMoatScore"]
+        required: ["ideaSummary", "analysisIntent", "summary", "suggestions", "overallMoatScore"]
       }
     }
   });

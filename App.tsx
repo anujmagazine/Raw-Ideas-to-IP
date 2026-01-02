@@ -42,18 +42,21 @@ const App: React.FC = () => {
     try {
       const element = resultsRef.current;
       const opt = {
-        margin: 10,
-        filename: 'IP-Moat-Strategy.pdf',
+        margin: [10, 10],
+        filename: `Idea-to-IP-Intelligence-${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          letterRendering: true,
+          scrollY: 0
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      // Generate the PDF directly as a file download
       await html2pdf().set(opt).from(element).save();
     } catch (err) {
       console.error('PDF Generation error:', err);
-      // Fallback to standard print if library fails
       window.print();
     } finally {
       setIsGeneratingPdf(false);
@@ -133,11 +136,52 @@ const App: React.FC = () => {
 
       {result && !loading && (
         <div className="space-y-12 pb-20 print-container" ref={resultsRef}>
+          {/* Enhanced Report Header Section */}
+          <div className="mb-8 p-10 bg-white rounded-3xl border-2 border-slate-100 shadow-sm relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Idea to IP Intelligence</h1>
+                <div className="flex items-center space-x-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  <span className="bg-slate-100 px-2 py-1 rounded">REF: {Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                  <span>•</span>
+                  <span>Issued: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                </div>
+              </div>
+              <div className="hidden sm:block">
+                <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-indigo-100">Ω</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-2">Subject Overview</h3>
+                  <p className="text-slate-800 text-lg font-medium leading-relaxed">
+                    {result.ideaSummary}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Strategic Goal</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed italic">
+                    {result.analysisIntent}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-8 pt-6 border-t border-slate-50 flex items-center text-[10px] text-slate-300 font-medium uppercase tracking-widest">
+              <span>Confidential IP Strategy Analysis • Intelligence for Action</span>
+            </div>
+          </div>
+
           <VisualSummary result={result} />
           
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-              <h3 className="text-2xl font-bold text-slate-900">Top 5 IP Recommendations</h3>
+              <h3 className="text-2xl font-bold text-slate-900">Key Intellectual Property Pathways</h3>
               <div className="flex items-center space-x-3 no-print">
                 <button
                   onClick={downloadPdf}
@@ -161,16 +205,10 @@ const App: React.FC = () => {
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                       </svg>
-                      <span>Download Strategy PDF</span>
+                      <span>Download Intelligence PDF</span>
                     </>
                   )}
                 </button>
-                <div className="flex items-center space-x-2 text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-                  <svg className="w-4 h-4 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
-                  </svg>
-                  <span>AI Curated</span>
-                </div>
               </div>
             </div>
             
@@ -201,7 +239,7 @@ const App: React.FC = () => {
                   isGeneratingPdf ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
-                {isGeneratingPdf ? 'Processing PDF...' : 'Export Strategy PDF'}
+                {isGeneratingPdf ? 'Processing...' : 'Export PDF Intelligence'}
               </button>
             </div>
           </div>
@@ -222,8 +260,8 @@ const App: React.FC = () => {
           </div>
           <div className="bg-white p-6 rounded-xl border border-slate-200 text-center">
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">3</div>
-            <h4 className="font-bold mb-2">Build Moat</h4>
-            <p className="text-sm">Receive 5 specific IP strategies to defend your business.</p>
+            <h4 className="font-bold mb-2">Secure Assets</h4>
+            <p className="text-sm">Receive 5 specific IP strategies to defend your intelligence.</p>
           </div>
         </div>
       )}

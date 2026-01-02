@@ -18,7 +18,9 @@ export interface IPSuggestion {
 }
 
 export interface AnalysisResult {
-  summary: string;
+  ideaSummary: string; // Concise summary of the user's input
+  analysisIntent: string; // Explanation of what follows in the analysis
+  summary: string; // The strategic overview
   suggestions: IPSuggestion[];
   overallMoatScore: number;
 }

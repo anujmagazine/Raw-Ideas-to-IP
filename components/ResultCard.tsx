@@ -2,12 +2,21 @@
 import React from 'react';
 import { IPSuggestion, IPType } from '../types';
 
-const typeColors: Record<IPType, string> = {
+export const typeColors: Record<IPType, string> = {
   [IPType.PATENT]: 'bg-amber-100 text-amber-700 border-amber-200',
   [IPType.TRADEMARK]: 'bg-blue-100 text-blue-700 border-blue-200',
   [IPType.COPYRIGHT]: 'bg-green-100 text-green-700 border-green-200',
   [IPType.TRADE_SECRET]: 'bg-purple-100 text-purple-700 border-purple-200',
   [IPType.DESIGN_RIGHT]: 'bg-rose-100 text-rose-700 border-rose-200',
+};
+
+// Raw hex colors for charts to match Tailwind classes
+export const typeHexColors: Record<IPType, string> = {
+  [IPType.PATENT]: '#f59e0b', // amber-500
+  [IPType.TRADEMARK]: '#3b82f6', // blue-500
+  [IPType.COPYRIGHT]: '#10b981', // green-500
+  [IPType.TRADE_SECRET]: '#8b5cf6', // purple-500
+  [IPType.DESIGN_RIGHT]: '#f43f5e', // rose-500
 };
 
 interface Props {
