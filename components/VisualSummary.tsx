@@ -39,7 +39,8 @@ export const VisualSummary: React.FC<Props> = ({ result }) => {
               cursor={{ fill: '#f8fafc' }}
               contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
             />
-            <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
+            {/* isAnimationActive={false} is crucial for PDF generation to ensure data is visible immediately */}
+            <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40} isAnimationActive={false}>
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}

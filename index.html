@@ -9,8 +9,49 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- html2pdf.js is used for direct PDF generation which is more reliable than window.print in many environments -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
+        
+        @media print {
+            header, footer, .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .print-container {
+                width: 100% !important;
+                max-width: none !important;
+                padding: 20px !important;
+                background: white !important;
+            }
+            .grid {
+                display: block !important;
+            }
+            .grid > div {
+                margin-bottom: 2rem !important;
+                page-break-inside: avoid;
+            }
+            .shadow-sm, .shadow-md, .shadow-xl, .shadow-2xl {
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+        }
+
+        /* Specific styles for PDF generation via html2pdf */
+        .pdf-mode {
+            padding: 40px !important;
+            background: white !important;
+            color: black !important;
+        }
     </style>
 <script type="importmap">
 {

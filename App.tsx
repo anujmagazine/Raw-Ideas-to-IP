@@ -1,16 +1,21 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Layout } from './components/Layout';
 import { analyzeIPStrategy } from './services/geminiService';
 import { AnalysisResult } from './types';
 import { ResultCard } from './components/ResultCard';
 import { VisualSummary } from './components/VisualSummary';
 
+// Declare html2pdf for TypeScript
+declare var html2pdf: any;
+
 const App: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,9 +34,35 @@ const App: React.FC = () => {
     }
   };
 
+  const downloadPdf = async () => {
+    if (!resultsRef.current) return;
+    
+    setIsGeneratingPdf(true);
+    
+    try {
+      const element = resultsRef.current;
+      const opt = {
+        margin: 10,
+        filename: 'IP-Moat-Strategy.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      // Generate the PDF directly as a file download
+      await html2pdf().set(opt).from(element).save();
+    } catch (err) {
+      console.error('PDF Generation error:', err);
+      // Fallback to standard print if library fails
+      window.print();
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto mb-12 text-center">
+      <div className="max-w-4xl mx-auto mb-12 text-center no-print">
         <h2 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
           Unlock Your <span className="text-indigo-600">Competitive Moat</span>
         </h2>
@@ -41,7 +72,7 @@ const App: React.FC = () => {
         </p>
       </div>
 
-      <div className="max-w-3xl mx-auto mb-16">
+      <div className="max-w-3xl mx-auto mb-16 no-print">
         <form onSubmit={handleAnalyze} className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
           <div className="relative bg-white border border-slate-200 p-2 rounded-2xl shadow-xl">
@@ -93,7 +124,7 @@ const App: React.FC = () => {
       </div>
 
       {loading && !result && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse no-print">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="h-64 bg-slate-100 rounded-xl border border-slate-200"></div>
           ))}
@@ -101,17 +132,45 @@ const App: React.FC = () => {
       )}
 
       {result && !loading && (
-        <div className="space-y-12 pb-20">
+        <div className="space-y-12 pb-20 print-container" ref={resultsRef}>
           <VisualSummary result={result} />
           
           <div>
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
               <h3 className="text-2xl font-bold text-slate-900">Top 5 IP Recommendations</h3>
-              <div className="flex items-center space-x-2 text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-                <svg className="w-4 h-4 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
-                </svg>
-                <span>Curated by AI Strategist</span>
+              <div className="flex items-center space-x-3 no-print">
+                <button
+                  onClick={downloadPdf}
+                  disabled={isGeneratingPdf}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-bold text-sm border transition-colors shadow-sm ${
+                    isGeneratingPdf 
+                    ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                    : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
+                  }`}
+                >
+                  {isGeneratingPdf ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Generating File...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      <span>Download Strategy PDF</span>
+                    </>
+                  )}
+                </button>
+                <div className="flex items-center space-x-2 text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                  <svg className="w-4 h-4 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
+                  </svg>
+                  <span>AI Curated</span>
+                </div>
               </div>
             </div>
             
@@ -136,10 +195,13 @@ const App: React.FC = () => {
                 Remember: a moat is only effective if you actively maintain it.
               </p>
               <button 
-                onClick={() => window.print()}
-                className="bg-white text-slate-900 px-6 py-2 rounded-lg font-bold text-sm hover:bg-slate-100 transition-colors"
+                onClick={downloadPdf}
+                disabled={isGeneratingPdf}
+                className={`bg-white text-slate-900 px-6 py-2 rounded-lg font-bold text-sm hover:bg-slate-100 transition-colors no-print ${
+                  isGeneratingPdf ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                Export Strategy PDF
+                {isGeneratingPdf ? 'Processing PDF...' : 'Export Strategy PDF'}
               </button>
             </div>
           </div>
@@ -147,7 +209,7 @@ const App: React.FC = () => {
       )}
 
       {!result && !loading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500 no-print">
           <div className="bg-white p-6 rounded-xl border border-slate-200 text-center">
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">1</div>
             <h4 className="font-bold mb-2">Input Idea</h4>
